@@ -9,6 +9,9 @@ postgresql-ha:
 
 persistence:
   enabled: true
+  # Use the existing PVC created by the chart once; avoid patching/resizing on upgrades
+  create: false
+  claimName: gitea-shared-storage
   size: 5Gi
   storageClass: ""
 
@@ -18,6 +21,15 @@ gitea:
     password: dbadmin@2k25
     email: yeahitsprem@gmail.com
   config:
+    server:
+      # Public URL for Gitea (used in links and callbacks)
+      ROOT_URL: https://gitea.premchanderj.me/
+      # SSH is exposed inside the cluster; adjust if you front it externally
+      SSH_LISTEN_PORT: 2222
+      SSH_PORT: 22
+    security:
+      # Lock the installer after initial setup
+      INSTALL_LOCK: true
     database:
       DB_TYPE: mysql
       HOST: gitea-mysql:3306
@@ -30,3 +42,11 @@ gitea:
       ADAPTER: memory
     queue:
       TYPE: level
+
+# Ensure in-chart caches are disabled to keep footprint small
+valkey:
+  enabled: false
+
+# Explicitly disable the optional valkey-cluster subchart
+valkey-cluster:
+  enabled: false
